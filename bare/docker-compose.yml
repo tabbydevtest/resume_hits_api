@@ -1,0 +1,67 @@
+version: "3.9"
+networks:
+  api:
+    driver: bridge
+
+services:
+  redis-0:
+    build: ./redis/redis-0
+    container_name: "redis-0"
+    networks:
+      - api
+
+  redis-1:
+    build: ./redis/redis-1
+    container_name: "redis-1"
+    networks:
+      - api
+
+  redis-2:
+    build: ./redis/redis-2
+    container_name: "redis-2"
+    networks:
+      - api
+
+  redis-sentinel-0:
+    build: ./redis/redis-sentinel-0
+    container_name: "redis-sentinel-0"
+    networks:
+      - api
+
+  redis-sentinel-1:
+    build: ./redis/redis-sentinel-1
+    container_name: "redis-sentinel-1"
+    networks:
+      - api
+
+  redis-sentinel-2:
+    build: ./redis/redis-sentinel-2
+    container_name: "redis-sentinel-2"
+    networks:
+      - api
+  
+
+
+  flask_app:
+    build: ./flask
+    container_name: "flask_app"
+    networks:
+      - api
+    ports:
+      - '4000:8080'
+    entrypoint: ["uwsgi", "uwsgi.ini"]
+    depends_on:
+      - redis-sentinel-0
+      - redis-sentinel-1
+      - redis-sentinel-2
+
+
+  nginx:
+    build: ./nginx
+    container_name: "nginx"
+    ports:
+      - '80:80'
+    networks:
+      - api
+    depends_on:
+      - flask_app
